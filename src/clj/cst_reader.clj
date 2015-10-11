@@ -14,11 +14,12 @@
 
 (defn cst-read
   " Reads the stream into a cst structure form "
-  [io]
-  (LispReader/read io nil))
+  ([io] (cst-read io nil))
+  ([io opts] (LispReader/read io opts)))
 
 (defn cst-read-string
   " Read a string in a cst structure form "
-  [s]
-  (with-open [io (PushbackReader. (StringReader. s))]
-    (cst-read io)))
+  ([s] (cst-read-string s nil))
+  ([s opts]
+    (with-open [io (PushbackReader. (StringReader. s))]
+     (cst-read io opts))))

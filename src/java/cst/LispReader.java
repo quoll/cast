@@ -97,7 +97,7 @@ public class LispReader {
 
   static {
   macros['"'] = new StringReader();
-  macros[';'] = new CommentReader();
+  macros[';'] = new SyntaxCommentReader();
   macros[','] = new CommaReader();
   macros['\''] = new WrappingReader(Macro.QUOTE);
   macros['@'] = new WrappingReader(Macro.DEREF);//new DerefReader();
@@ -120,7 +120,7 @@ public class LispReader {
   dispatchMacros['('] = new FnReader();
   dispatchMacros['{'] = new SetReader();
   dispatchMacros['='] = new EvalReader();
-  dispatchMacros['!'] = new CommentReader();
+  dispatchMacros['!'] = new MacroCommentReader();
   dispatchMacros['<'] = new UnreadableReader();
   dispatchMacros['_'] = new DiscardReader();
   dispatchMacros['?'] = new ConditionalReader();
@@ -561,23 +561,34 @@ public class LispReader {
     }
   }
 
-  public static class CommentReader extends AFn {
+  private static abstract class CommentReader extends AFn {
     public Object invoke(Object reader, Object semicolon, Object opts, Object pendingForms) {
       Reader r = (Reader) reader;
       StringBuilder sb = new StringBuilder();
       for (int ch = read1(r); ch != -1 && ch != '\n' && ch != '\r'; ch = read1(r)) {
         sb.append((char)ch);
       }
-      return new SyntaxElement(Macro.COMMENT, sb.toString());
+      return sb.toString();
     }
+  }
 
+  public static class SyntaxCommentReader extends AFn {
+    public Object invoke(Object reader, Object semicolon, Object opts, Object pendingForms) {
+      return new SyntaxElement(Macro.COMMENT, super.invoke(reader, semicolon, opts, pendingForms));
+    }
+  }
+
+  public static class MacroCommentReader extends AFn {
+    public Object invoke(Object reader, Object semicolon, Object opts, Object pendingForms) {
+      return new SyntaxElement(Macro.M_COMMENT, super.invoke(reader, semicolon, opts, pendingForms));
+    }
   }
 
   public static class DiscardReader extends AFn {
     public Object invoke(Object reader, Object underscore, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
-      read(r, true, null, true, opts, ensurePending(pendingForms));
-      return r;
+      Object form = read(r, true, null, true, opts, ensurePending(pendingForms));
+      return new SyntaxElement(Macro.DISCARD, form);
     }
   }
 
@@ -617,7 +628,7 @@ public class LispReader {
     public Object invoke(Object reader, Object quote, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
       Object o = read(r, true, null, true, opts, ensurePending(pendingForms));
-      return RT.list(THE_VAR, o);
+      return new SyntaxElement(Macro.VAR, RT.list(THE_VAR, o));
     }
   }
 
@@ -657,26 +668,7 @@ public class LispReader {
         Var.pushThreadBindings(RT.map(ARG_ENV, PersistentTreeMap.EMPTY));
         unread(r, '(');
         Object form = read(r, true, null, true, opts, ensurePending(pendingForms));
-
-        PersistentVector args = PersistentVector.EMPTY;
-        PersistentTreeMap argsyms = (PersistentTreeMap)ARG_ENV.deref();
-        ISeq rargs = argsyms.rseq();
-        if (rargs != null) {
-          int higharg = (Integer)((Map.Entry)rargs.first()).getKey();
-          if (higharg > 0) {
-            for (int i = 1; i <= higharg; ++i) {
-              Object sym = argsyms.valAt(i);
-              if (sym == null) sym = garg(i);
-              args = args.cons(sym);
-            }
-          }
-          Object restsym = argsyms.valAt(-1);
-          if (restsym != null) {
-            args = args.cons(AMP);
-            args = args.cons(restsym);
-          }
-        }
-        return RT.list(FN, args, form);
+        return new SyntaxElement(Macro.FN, form);
       } finally {
         Var.popThreadBindings();
       }
@@ -814,37 +806,39 @@ public class LispReader {
   }
 
   public static class CharacterReader extends AFn {
+    private SyntaxElement cse(char c) { return new SyntaxElement(Macro.CHAR, c); }
+
     public Object invoke(Object reader, Object backslash, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
       int ch = read1(r);
       if (ch == -1) throw Util.runtimeException("EOF while reading character");
       String token = readToken(r, (char) ch);
       if (token.length() == 1) {
-        return Character.valueOf(token.charAt(0));
+        return cse(Character.valueOf(token.charAt(0)));
       } else if (token.equals("newline")) {
-        return '\n';
+        return cse('\n');
       } else if (token.equals("space")) {
-        return ' ';
+        return cse(' ');
       } else if (token.equals("tab")) {
-        return '\t';
+        return cse('\t');
       } else if (token.equals("backspace")) {
-        return '\b';
+        return cse('\b');
       } else if (token.equals("formfeed")) {
-        return '\f';
+        return cse('\f');
       } else if (token.equals("return")) {
-        return '\r';
+        return cse('\r');
       } else if (token.startsWith("u")) {
         char c = (char) readUnicodeChar(token, 1, 4, 16);
         if (c >= '\uD800' && c <= '\uDFFF') { // surrogate code unit?
           throw Util.runtimeException("Invalid character constant: \\u" + Integer.toString(c, 16));
         }
-        return c;
+        return cse(c);
       } else if (token.startsWith("o")) {
         int len = token.length() - 1;
         if (len > 3) throw Util.runtimeException("Invalid octal escape sequence length: " + len);
         int uc = readUnicodeChar(token, 1, len, 8);
         if (uc > 0377) throw Util.runtimeException("Octal escape sequence must be in range [0, 377].");
-        return (char)uc;
+        return cse((char)uc);
       }
       throw Util.runtimeException("Unsupported character: \\" + token);
     }
@@ -879,30 +873,7 @@ public class LispReader {
 
       PushbackReader r = (PushbackReader) reader;
       Object o = read(r, true, null, true, opts, ensurePending(pendingForms));
-      if (o instanceof Symbol) {
-        return RT.classForName(o.toString());
-      } else if (o instanceof IPersistentList) {
-        Symbol fs = (Symbol) RT.first(o);
-        if (fs.equals(THE_VAR)) {
-          Symbol vs = (Symbol) RT.second(o);
-          return RT.var(vs.getNamespace(), vs.getName());  //Compiler.resolve((Symbol) RT.second(o),true);
-        }
-        if (fs.getName().endsWith(".")) {
-          Object[] args = RT.toArray(RT.next(o));
-          return Reflector.invokeConstructor(RT.classForName(fs.getName().substring(0, fs.getName().length() - 1)), args);
-        }
-        if (Compiler.namesStaticMember(fs)) {
-          Object[] args = RT.toArray(RT.next(o));
-          return Reflector.invokeStaticMethod(fs.getNamespace(), fs.getName(), args);
-        }
-        Object v = Compiler.maybeResolveIn(currentNS(), fs);
-        if (v instanceof Var) {
-          return ((IFn) v).applyTo(RT.next(o));
-        }
-        throw Util.runtimeException("Can't resolve " + fs);
-      } else {
-        throw new IllegalArgumentException("Unsupported #= form");
-      }
+      return new SyntaxElement(Macro.EVAL, o);
     }
   }
 

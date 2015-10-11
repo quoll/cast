@@ -4,7 +4,7 @@ import clojure.lang.Keyword;
 import clojure.lang.IPersistentMap;
 
 /**
- * Indicates an element of syntax, without an exact corolory in the AST structure.
+ * Indicates an element of syntax, without an exact corollory in the AST structure.
  * Includes functions for conversion to macro text, based on the macro type.
  */
 public class SyntaxElement {
@@ -77,9 +77,24 @@ public class SyntaxElement {
         else return e.data.toString();
       }
     },
-    DISPATCH {
-      public String str(SyntaxElement e) { return "#"; }
-    };
+    EVAL {
+      public String str(SyntaxElement e) { return "#=" + e.data;}
+    },
+    VAR {
+      public String str(SyntaxElement e) { return "#'" + e.data; }
+    },
+    FN {
+      public String str(SyntaxElement e) { return "#" + e.data; }
+    },
+    M_COMMENT {
+      public String str(SyntaxElement e) { return "#!" + e.data; }
+    },
+    DISCARD {
+      public String str(SyntaxElement e) { return "#_" + e.data; }
+    },
+    CONDITIONAL {
+      public String str(SyntaxElement e) { return "#?" + e.data; }
+    } ;
     public abstract String str(SyntaxElement e);
   };
 
