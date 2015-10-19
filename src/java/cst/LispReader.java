@@ -186,7 +186,7 @@ public class LispReader {
   static public final Keyword EOFTHROW = Keyword.intern(null, "eofthrow");
 
   // Platform features - always installed
-  static private final Keyword PLATFORM_KEY = Keyword.intern(null, "clj2");
+  static private final Keyword PLATFORM_KEY = Keyword.intern(null, "clj");
   static private final Object PLATFORM_FEATURES = PersistentHashSet.create(PLATFORM_KEY);
 
   // Reader conditional options - use with :read-cond
@@ -1043,6 +1043,7 @@ public class LispReader {
 
   public static class ConditionalReader extends AFn {
 
+    final static private Object READ_STARTED = new Object();
     final static public Keyword DEFAULT_FEATURE = Keyword.intern(null, "default");
     final static public IPersistentSet RESERVED_FEATURES =
         RT.set(Keyword.intern(null, "else"), Keyword.intern(null, "none"));
@@ -1059,7 +1060,7 @@ public class LispReader {
     }
 
     public static Object readCondDelimited(PushbackReader r, boolean splicing, Object opts, Object pendingForms) {
-      Object result = null;
+      Object result = READ_STARTED;
       Object form; // The most recently ready form
       boolean toplevel = (pendingForms == null);
       pendingForms = ensurePending(pendingForms);
@@ -1069,7 +1070,7 @@ public class LispReader {
               ((LineNumberingPushbackReader)r).getLineNumber() : -1;
 
       for (;;) {
-        if (result == null) {
+        if (result == READ_STARTED) {
           // Read the next feature
           form = read(r, false, READ_EOF, ')', READ_FINISHED, true, opts, pendingForms);
 
@@ -1131,7 +1132,7 @@ public class LispReader {
 
       }
 
-      if (result == null) return r;  // no features matched
+      if (result == READ_STARTED) return r;  // no features matched
 
       if (splicing) {
         if (! (result instanceof List)) {
@@ -1176,17 +1177,37 @@ public class LispReader {
 
       if (ch != '(') throw Util.runtimeException("read-cond body must be a list");
 
+      int line = -1;
+      int column = -1;
+      if (r instanceof LineNumberingPushbackReader) {
+        line = ((LineNumberingPushbackReader)r).getLineNumber();
+        column = ((LineNumberingPushbackReader)r).getColumnNumber() - 1;
+      }
+
       try {
         Var.pushThreadBindings(RT.map(READ_COND_ENV, RT.T));
 
-        if (isPreserveReadCond(opts)) {
-          IFn listReader = getMacro(ch); // should always be a list
-          Object form = listReader.invoke(r, ch, opts, ensurePending(pendingForms));
-
-          return ReaderConditional.create(form, splicing);
-        } else {
-          return readCondDelimited(r, splicing, opts, pendingForms);
+        List list = readDelimitedList(')', r, true, opts, ensurePending(pendingForms));
+        if (list.size() % 2 != 0) throw Util.runtimeException("conditional macros require type/form pairs");
+        for (int i = 0; i < list.size(); i++) {
+          Object k = list.get(i);
+          if (0 == i % 2) {
+            if (!(k instanceof Keyword)) throw Util.runtimeException("conditional macro conditions must be a keyword");
+            if (RESERVED_FEATURES.contains(k)) throw Util.runtimeException("Feature name " + k + " is reserved.");
+          } else {
+            if (splicing && !(k instanceof List)) throw Util.runtimeException("Spliced macro conditionals must be a list");
+          }
         }
+        IObj s = (IObj)PersistentList.create(list);
+        Object result;
+        if (line != -1) {
+          result = s.withMeta(RT.map(LINE_KEY, line, COLUMN_KEY, column));
+        } else {
+          result = s;
+        }
+        return new SyntaxElement(Macro.CONDITIONAL,
+                                 RT.map(SyntaxElement.SPLICE_KEY, splicing,
+                                        SyntaxElement.FORM_KEY, result));
       } finally {
         Var.popThreadBindings();
       }

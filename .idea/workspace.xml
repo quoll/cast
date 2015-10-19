@@ -4,14 +4,11 @@
     <option name="SCOPE_TYPE" value="3" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9d945954-5be0-4a46-b8ff-9d69b855265b" name="Default" comment="All but conditional reader macros are now parsing to syntax structure">
+    <list default="true" id="9d945954-5be0-4a46-b8ff-9d69b855265b" name="Default" comment="Conditional reader macros are now parsing to syntax structure">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.nrepl-port" afterPath="$PROJECT_DIR$/.nrepl-port" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/Clojure_1_7_0.xml" afterPath="$PROJECT_DIR$/.idea/libraries/Clojure_1_7_0.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/java/cst/LispReader.java" afterPath="$PROJECT_DIR$/src/java/cst/LispReader.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/java/cst/SyntaxElement.java" afterPath="$PROJECT_DIR$/src/java/cst/SyntaxElement.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/clj/cst_reader.clj" afterPath="$PROJECT_DIR$/src/clj/cst_reader.clj" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/replstate.xml" afterPath="$PROJECT_DIR$/.idea/replstate.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="cast.iws" />
@@ -37,8 +34,8 @@
       <file leaf-file-name="LispReader.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/java/cst/LispReader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.83042395">
-              <caret line="1061" column="26" selection-start-line="1061" selection-start-column="26" selection-end-line="1061" selection-end-column="26" />
+            <state vertical-scroll-proportion="0.21879815">
+              <caret line="1160" column="1" selection-start-line="1160" selection-start-column="1" selection-end-line="1160" selection-end-column="1" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -60,7 +57,7 @@
         <entry file="file://$PROJECT_DIR$/src/java/cst/SyntaxElement.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="91" column="0" selection-start-line="91" selection-start-column="0" selection-end-line="91" selection-end-column="0" />
+              <caret line="100" column="18" selection-start-line="100" selection-start-column="18" selection-end-line="100" selection-end-column="18" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -72,7 +69,7 @@
         <entry file="file://$PROJECT_DIR$/src/clj/cst_reader.clj">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="23" column="12" selection-start-line="23" selection-start-column="12" selection-end-line="23" selection-end-column="12" />
+              <caret line="1" column="35" selection-start-line="1" selection-start-column="35" selection-end-line="1" selection-end-column="35" />
               <folding />
             </state>
           </provider>
@@ -107,9 +104,9 @@
         <option value="$PROJECT_DIR$/src/java/cst/CommaSyntax.java" />
         <option value="$PROJECT_DIR$/src/clj/ast_reader.clj" />
         <option value="$PROJECT_DIR$/cast.iml" />
+        <option value="$PROJECT_DIR$/src/clj/cst_reader.clj" />
         <option value="$PROJECT_DIR$/src/java/cst/SyntaxElement.java" />
         <option value="$PROJECT_DIR$/src/java/cst/LispReader.java" />
-        <option value="$PROJECT_DIR$/src/clj/cst_reader.clj" />
       </list>
     </option>
   </component>
@@ -124,8 +121,8 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="44" />
-    <option name="y" value="23" />
+    <option name="x" value="18" />
+    <option name="y" value="63" />
     <option name="width" value="1344" />
     <option name="height" value="746" />
   </component>
@@ -442,6 +439,13 @@
       <option name="number" value="Default" />
       <updated>1436933044218</updated>
     </task>
+    <task id="LOCAL-00001" summary="All but conditional reader macros are now parsing to syntax structure">
+      <created>1444546857770</created>
+      <option name="number" value="00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1444546857770</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TodoView">
@@ -454,8 +458,8 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="44" y="23" width="1344" height="746" extended-state="0" />
-    <editor active="false" />
+    <frame x="18" y="63" width="1344" height="746" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -464,17 +468,17 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32889965" sideWeight="0.49713466" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Leiningen" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.39919356" sideWeight="0.5407221" order="3" side_tool="false" content_ui="tabs" x="683" y="124" width="721" height="487" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" weight="0.39919356" sideWeight="0.5407221" order="3" side_tool="false" content_ui="tabs" x="690" y="456" width="715" height="425" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1522911" sideWeight="0.52305114" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3264402" sideWeight="0.4642857" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3264402" sideWeight="0.4642857" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32889965" sideWeight="0.495702" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24937028" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3392857" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="REPL" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3264402" sideWeight="0.53571427" order="12" side_tool="true" content_ui="tabs" />
+      <window_info id="REPL" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3264402" sideWeight="0.53571427" order="12" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -504,21 +508,27 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/java/cst/SyntaxElement.java</url>
-          <line>32</line>
+          <line>34</line>
           <properties />
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/java/cst/SyntaxElement.java</url>
-          <line>53</line>
+          <line>55</line>
           <properties />
           <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/java/cst/LispReader.java</url>
+          <line>1160</line>
+          <properties />
+          <option name="timeStamp" value="18" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="18" />
+      <option name="time" value="19" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -808,16 +818,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/java/cst/SyntaxElement.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="91" column="0" selection-start-line="91" selection-start-column="0" selection-end-line="91" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/lib/clojure-1.7.0.jar!/clojure/lang/LispReader.class">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-2.3888888">
@@ -837,15 +837,25 @@
     <entry file="file://$PROJECT_DIR$/src/clj/cst_reader.clj">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="23" column="12" selection-start-line="23" selection-start-column="12" selection-end-line="23" selection-end-column="12" />
+          <caret line="1" column="35" selection-start-line="1" selection-start-column="35" selection-end-line="1" selection-end-column="35" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/java/cst/SyntaxElement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="100" column="18" selection-start-line="100" selection-start-column="18" selection-end-line="100" selection-end-column="18" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/java/cst/LispReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.83042395">
-          <caret line="1061" column="26" selection-start-line="1061" selection-start-column="26" selection-end-line="1061" selection-end-column="26" />
+        <state vertical-scroll-proportion="0.21879815">
+          <caret line="1160" column="1" selection-start-line="1160" selection-start-column="1" selection-end-line="1160" selection-end-column="1" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

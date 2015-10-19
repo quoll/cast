@@ -14,6 +14,8 @@ public class SyntaxElement {
   final static Keyword MAP_KEY = Keyword.intern(null, "map");
   final static Keyword META_KEY = Keyword.intern(null, "meta");
   final static Keyword OBJECT_KEY = Keyword.intern(null, "object");
+  final static Keyword SPLICE_KEY = Keyword.intern(null, "splice");
+  final static Keyword FORM_KEY = Keyword.intern(null, "form");
 
   public enum Macro {
     COMMA {
@@ -93,7 +95,11 @@ public class SyntaxElement {
       public String str(SyntaxElement e) { return "#_" + e.data; }
     },
     CONDITIONAL {
-      public String str(SyntaxElement e) { return "#?" + e.data; }
+      public String str(SyntaxElement e) {
+        Object form = ((IPersistentMap)e.data).valAt(FORM_KEY);
+        Boolean splicing = (Boolean)((IPersistentMap)e.data).valAt(SPLICE_KEY);
+        return "#?" + (splicing ? "@" : "") + form;
+      }
     } ;
     public abstract String str(SyntaxElement e);
   };
