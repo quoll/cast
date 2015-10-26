@@ -1,4 +1,4 @@
-(ns cst-reader
+(ns cst.reader
   (require [clojure.java.io :as io])
   (import [java.io PushbackReader StringReader Writer]
           [cst LispReader SyntaxElement]))
@@ -13,13 +13,24 @@
     (writer-print (str o))))
 
 (defn cst-read
-  " Reads the stream into a cst structure form "
+  "Reads the stream into a cst structure form "
   ([io] (cst-read io nil))
   ([io opts] (LispReader/read io opts)))
 
 (defn cst-read-string
-  " Read a string in a cst structure form "
+  "Read a string in a cst structure form "
   ([s] (cst-read-string s nil))
   ([s opts]
     (with-open [io (PushbackReader. (StringReader. s))]
      (cst-read io opts))))
+
+(defn cst-read-all-string
+  "Read all forms from a string into a seq of CST structures"
+  ([s] (cst-read-all-string s nil))
+  ([s opts]
+   (with-open [io (PushbackReader. (StringReader. s))]
+
+     ; read(r, eofIsError, eofValue, null, null, isRecursive, opts, null);
+     (LispReader/read io, false, )
+     )
+   ))

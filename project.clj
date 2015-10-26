@@ -3,8 +3,10 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 ]
+  :dependencies [[org.clojure/clojure "1.8.0-beta1"]
+                 [com.datomic/datomic-pro "0.9.5327"]]
   :source-paths ["src/clj"]
   :java-source-paths ["src/java"]
-  :main cst-reader)
+  :main cst.reader
+  :repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
+                                   :creds :gpg}} )
