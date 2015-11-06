@@ -114,6 +114,12 @@ public class SyntaxElement {
         return "#?" + (splicing ? "@" : "") + form;
       }
     },
+    VECTOR {
+      public String str(SyntaxElement e) { return e.data.toString(); }
+    },
+    LIST {
+      public String str(SyntaxElement e) { return e.data.toString(); }
+    },
     FILE {
       public String str(SyntaxElement e) {
         StringBuffer result = new StringBuffer();

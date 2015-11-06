@@ -32,17 +32,8 @@ public class LispReader {
   static final Symbol THE_VAR = Symbol.intern("var");
   static final Symbol UNQUOTE = Symbol.intern("clojure.core", "unquote");
   static final Symbol UNQUOTE_SPLICING = Symbol.intern("clojure.core", "unquote-splicing");
-  static final Symbol CONCAT = Symbol.intern("clojure.core", "concat");
-  static final Symbol SEQ = Symbol.intern("clojure.core", "seq");
   static final Symbol LIST = Symbol.intern("clojure.core", "list");
-  static final Symbol APPLY = Symbol.intern("clojure.core", "apply");
-  static final Symbol HASHMAP = Symbol.intern("clojure.core", "hash-map");
-  static final Symbol HASHSET = Symbol.intern("clojure.core", "hash-set");
-  static final Symbol VECTOR = Symbol.intern("clojure.core", "vector");
   static final Symbol WITH_META = Symbol.intern("clojure.core", "with-meta");
-  static final Symbol META = Symbol.intern("clojure.core", "meta");
-  static final Symbol READ_COND = Symbol.intern("clojure.core", "read-cond");
-  static final Symbol READ_COND_SPLICING = Symbol.intern("clojure.core", "read-cond-splicing");
   static final Keyword UNKNOWN = Keyword.intern(null, "unknown");
 
   static IFn[] macros = new IFn[256];
@@ -85,8 +76,6 @@ public class LispReader {
   }
 
   // Extracted elements from the Compiler specials
-  final static Symbol AMP = Symbol.intern("&");
-  final static Symbol FN = Symbol.intern("fn*");
   final static Keyword TAG_KEY = Keyword.intern(null, "tag");
   final static Keyword KEYWORD_KEY = Keyword.intern(null, "keyword");
   final static Keyword MAP_KEY = Keyword.intern(null, "map");

@@ -21,7 +21,7 @@
 (def basic-schema
   [{:db/id (Peer/tempid :db.part/db)
     :db/ident :cst/type
-    :db/valueType :db.type/keyword
+    :db/valueType :db.type/keyword                          ;; TODO: change to ref
     :db/cardinality :db.cardinality/one
     :db.install/_attribute :db.part/db}
    {:db/id (Peer/tempid :db.part/db)
@@ -43,8 +43,11 @@
 (def schema (concat partitions basic-schema types))
 
 (def reader-macros
-  (map (fn [e]
-         {:db/id    (Peer/tempid :db.part/cst)
-          :db/ident (keyword (str/lower-case (.name e)))})
-       SyntaxElement$Macro/values))
+  (conj
+    (map (fn [e]
+           {:db/id    (Peer/tempid :db.part/cst)
+            :db/ident (keyword (str/lower-case (.name e)))})
+         (SyntaxElement$Macro/values))
+    {:db/id (Peer/tempid :db.part/cst)
+     :db/ident :native}))
 
