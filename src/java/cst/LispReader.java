@@ -891,14 +891,14 @@ public class LispReader {
       if ((a.length & 1) == 1) {
         throw Util.runtimeException("Map literal must contain an even number of forms");
       }
-      return RT.map(a);
+      return clojure.lang.PersistentArrayMap.createAsIfByAssoc(a);
     }
   }
 
   public static class SetReader extends AFn {
     public Object invoke(Object reader, Object leftbracket, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader)reader;
-      return PersistentHashSet.createWithCheck(readDelimitedList('}', r, true, opts, ensurePending(pendingForms)));
+      return new SyntaxElement(Macro.SET, readDelimitedList('}', r, true, opts, ensurePending(pendingForms)));
     }
   }
 

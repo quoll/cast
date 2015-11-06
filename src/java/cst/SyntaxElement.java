@@ -2,6 +2,7 @@ package cst;
 
 import clojure.lang.Keyword;
 import clojure.lang.IPersistentMap;
+import java.util.List;
 
 /**
  * Indicates an element of syntax, without an exact corollory in the AST structure.
@@ -18,6 +19,18 @@ public class SyntaxElement {
   final static Keyword FORM_KEY = Keyword.intern(null, "form");
 
   public enum Macro {
+    SET {
+      public String str(SyntaxElement e) {
+        StringBuilder sb = new StringBuilder("#{");
+        List array = (List)e.data;
+        for (int i = 0; i < array.size(); i++) {
+          if (i != 0) sb.append(", ");
+          sb.append(array.get(i).toString());
+        }
+        sb.append("}");
+        return sb.toString();
+      }
+    },
     COMMA {
       public String str(SyntaxElement e) { return ","; }
     },
@@ -100,8 +113,22 @@ public class SyntaxElement {
         Boolean splicing = (Boolean)((IPersistentMap)e.data).valAt(SPLICE_KEY);
         return "#?" + (splicing ? "@" : "") + form;
       }
-    } ;
+    },
+    FILE {
+      public String str(SyntaxElement e) {
+        StringBuffer result = new StringBuffer();
+        boolean first = true;
+        for (Object i: (List)e.data) {
+          if (first) first = false;
+          else result.append("\n");
+          result.append(i).append("\n");
+        }
+        return result.toString();
+      }
+    };
     public abstract String str(SyntaxElement e);
+    public final Keyword id;
+    Macro() { id = Keyword.intern("cst", name().toLowerCase()); }
   };
 
   public final Macro type;
