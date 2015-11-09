@@ -46,7 +46,7 @@ public class SyntaxElement {
       public boolean skippable() { return true; }
     },
     COMMENT {
-      public String str(Object e) { return ";" + e; }
+      public String str(Object e) { return ";" + e + "\n"; }
       public boolean skippable() { return true; }
     },
     QUOTE{
