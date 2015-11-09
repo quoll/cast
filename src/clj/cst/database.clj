@@ -1,5 +1,5 @@
 (ns cst.database
-  (:require [cst.data :as data]
+  (:require [cst.schema :as data]
             [datomic.api :refer [q] :as d])
   (:import [datomic Peer]
            [datomic.db DbId]
@@ -99,15 +99,6 @@
 (extend-protocol Data
   Object
   (object-data [x] [x []])
-  Map
-  (object-data [x]
-    (list-struct x :map nil (fn [n [k v]]
-                              (let [[vd vaux] (object-data v)
-                                    [kd kaux] (object-data k)]
-                                [{:db/id     (node)
-                                  :cst/index n
-                                  :cst/key   kd
-                                  :cst/value vd} (concat vaux kaux)]))))
   SyntaxElement
   (object-data [^SyntaxElement x]
     (let [node-id (node)

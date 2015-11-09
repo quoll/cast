@@ -74,27 +74,15 @@
             {:db/id :blank :cst/type :file :cst/element [:blank :blank]}]
            btx))))
 
-(declare expand-map)
-
-(defn expand [v]
-  (cond
-    (instance? EntityMap v) (expand-map (d/touch v))
-    (set? v) (map expand v)
-    :default v))
-
-(defn expand-map
-  [x]
-  (into {} (map (fn [[k v]] [k (expand v)]) x)))
-
 (deftest save-program
   (let [fhello "(ns cst.test-hello)\n(println \"Hello world\")"
         chello (cst-read-all-string fhello)
         tx (tx-data chello)
-        cnx (database "datomic:mem://source")
+        cnx (database "datomic:mem://src")
         _ (d/transact cnx tx)
         db (d/db cnx)
         pid (q '[:find ?pid . :where [?pid :cst/type :file]] db)
-        _ (println "---" pid)
-        prog (expand-map (d/touch (d/entity db pid)))]
-    (pprint prog)
+        prog (d/touch (d/entity db pid))
+        p (d/pull db '[:cst/element] pid)]
+    ; (pprint p)
     ))

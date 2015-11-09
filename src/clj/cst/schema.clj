@@ -1,4 +1,4 @@
-(ns cst.data
+(ns cst.schema
   (:require [clojure.string :as str])
   (:import [datomic Peer]
            [cst SyntaxElement$Type]))
@@ -9,18 +9,24 @@
                      :db/ident              :cst.value/object
                      :db/valueType          :db.type/ref
                      :db/cardinality        :db.cardinality/one
+                     :db/isComponent        true
                      :db.install/_attribute :db.part/db}
                     {:db/id                 (Peer/tempid :db.part/db)
                      :db/ident              :cst.value/symbol
                      :db/valueType          :db.type/string
                      :db/cardinality        :db.cardinality/one
+                     :db/fulltext           true
                      :db.install/_attribute :db.part/db}]
-                   (map #(let [nm (name %)]
-                          {:db/id                 (Peer/tempid :db.part/db)
-                           :db/ident              (keyword "cst.value" nm)
-                           :db/valueType          (keyword "db.type" nm)
-                           :db/cardinality        :db.cardinality/one
-                           :db.install/_attribute :db.part/db})
+                   (map (fn [a]
+                          (let [nm (name a)
+                                attr {:db/id                 (Peer/tempid :db.part/db)
+                                      :db/ident              (keyword "cst.value" nm)
+                                      :db/valueType          (keyword "db.type" nm)
+                                      :db/cardinality        :db.cardinality/one
+                                      :db.install/_attribute :db.part/db}]
+                            (if (= :string a)
+                              (assoc attr :db/fulltext true)
+                              attr)))
                         std-types)))
 
 (def basic-schema
@@ -32,6 +38,7 @@
    {:db/id (Peer/tempid :db.part/db)
     :db/ident :cst/element
     :db/valueType :db.type/ref
+    :db/isComponent true
     :db/cardinality :db.cardinality/many
     :db.install/_attribute :db.part/db}
    {:db/id (Peer/tempid :db.part/db)
