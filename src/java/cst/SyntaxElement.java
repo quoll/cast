@@ -1,7 +1,10 @@
 package cst;
 
-import clojure.lang.Keyword;
-import clojure.lang.IPersistentMap;
+import clojure.lang.*;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -18,59 +21,68 @@ public class SyntaxElement {
   final static Keyword SPLICE_KEY = Keyword.intern(null, "splice");
   final static Keyword FORM_KEY = Keyword.intern(null, "form");
 
-  public enum Macro {
+  static final SyntaxElement COMMA_SYNTAX = new SyntaxElement(SyntaxElement.Type.COMMA);
+
+  static private String join(String separator, Collection c) {
+    StringBuffer sb = new StringBuffer();
+    boolean first = true;
+    for (Object o: c) {
+      if (first) first = false;
+      else if (o != COMMA_SYNTAX) sb.append(separator);
+      sb.append(emit(o));
+    }
+    return sb.toString();
+  }
+  static private String spaceJoin(Collection c) {
+    return join(" ", c);
+  }
+
+  public enum Type {
     SET {
-      public String str(SyntaxElement e) {
-        StringBuilder sb = new StringBuilder("#{");
-        List array = (List)e.data;
-        for (int i = 0; i < array.size(); i++) {
-          if (i != 0) sb.append(", ");
-          sb.append(array.get(i).toString());
-        }
-        sb.append("}");
-        return sb.toString();
-      }
+      public String str(Object e) { return "#{" + spaceJoin((List) e) + "}"; }
     },
     COMMA {
-      public String str(SyntaxElement e) { return ","; }
+      public String str(Object e) { return ","; }
+      public boolean skippable() { return true; }
     },
     COMMENT {
-      public String str(SyntaxElement e) { return ";" + e.data; }
+      public String str(Object e) { return ";" + e; }
+      public boolean skippable() { return true; }
     },
     QUOTE{
-      public String str(SyntaxElement e) { return "'" + e.data; }
+      public String str(Object e) { return "'" + emit(e); }
     },
     DEREF {
-      public String str(SyntaxElement e) { return "@" + e.data; }
+      public String str(Object e) { return "@" + emit(e); }
     },
     META{
-      public String str(SyntaxElement e) {
-        Object form = ((IPersistentMap)e.data).valAt(OBJECT_KEY);
-        IPersistentMap meta = (IPersistentMap)((IPersistentMap)e.data).valAt(META_KEY);
+      public String str(Object e) {
+        Object form = ((IPersistentMap)e).valAt(OBJECT_KEY);
+        IPersistentMap meta = (IPersistentMap)((IPersistentMap)e).valAt(META_KEY);
 
         Object tag = meta.valAt(TAG_KEY);
-        if (tag != null) return "^" + tag + " " + form;
+        if (tag != null) return "^" + emit(tag) + " " + emit(form);
 
         Keyword keyword = (Keyword)meta.valAt(KEYWORD_KEY);
-        if (keyword != null) return "^" + keyword + " " + form;
+        if (keyword != null) return "^" + keyword + " " + emit(form);
 
         IPersistentMap map = (IPersistentMap)meta.valAt(MAP_KEY);
-        if (map != null) return "^" + map + " " + form;
+        if (map != null) return "^" + emit(map) + " " + emit(form);
 
         throw new IllegalStateException("Structure for Meta is unknown: " + e); }
     },
     SYNTAX_QUOTE {
-      public String str(SyntaxElement e) { return "`" + e.data; }
+      public String str(Object e) { return "`" + emit(e); }
     },
     UNQUOTE {
-      public String str(SyntaxElement e) { return "~" + e.data; }
+      public String str(Object e) { return "~" + emit(e); }
     },
     UNQUOTE_SPLICING {
-      public String str(SyntaxElement e) { return "~@" + e.data; }
+      public String str(Object e) { return "~@" + emit(e); }
     },
     CHAR {
-      public String str(SyntaxElement e) {
-        String d = (String) e.data;
+      public String str(Object e) {
+        String d = (String) e;
         if (d.length() == 1) {
           switch (d.charAt(0)) {
             case '\n': return "\\newline";
@@ -87,70 +99,91 @@ public class SyntaxElement {
       }
     },
     ARG{
-      public String str(SyntaxElement e) {
-        if (null == e.data) return "%";
-        else return e.data.toString();
+      public String str(Object e) {
+        if (null == e) return "%";
+        else return emit(e);
       }
     },
     EVAL {
-      public String str(SyntaxElement e) { return "#=" + e.data;}
+      public String str(Object e) { return "#=" + emit(e);}
     },
     VAR {
-      public String str(SyntaxElement e) { return "#'" + e.data; }
+      public String str(Object e) { return "#'" + emit(e); }
     },
     FN {
-      public String str(SyntaxElement e) { return "#" + e.data; }
+      public String str(Object e) { return "#" + emit(e); }
     },
     M_COMMENT {
-      public String str(SyntaxElement e) { return "#!" + e.data; }
+      public String str(Object e) { return "#!" + emit(e); }
+      public boolean skippable() { return true; }
     },
     DISCARD {
-      public String str(SyntaxElement e) { return "#_" + e.data; }
+      public String str(Object e) { return "#_" + emit(e); }
+      public boolean skippable() { return true; }
     },
     CONDITIONAL {
-      public String str(SyntaxElement e) {
-        Object form = ((IPersistentMap)e.data).valAt(FORM_KEY);
-        Boolean splicing = (Boolean)((IPersistentMap)e.data).valAt(SPLICE_KEY);
-        return "#?" + (splicing ? "@" : "") + form;
+      public String str(Object e) {
+        Object form = ((IPersistentMap)e).valAt(FORM_KEY);
+        Boolean splicing = (Boolean)((IPersistentMap)e).valAt(SPLICE_KEY);
+        return "#?" + (splicing ? "@" : "") + emit(form);
       }
     },
     VECTOR {
-      public String str(SyntaxElement e) { return e.data.toString(); }
+      public String str(Object e) { return "[" + spaceJoin((List) e) + "]"; }
     },
     LIST {
-      public String str(SyntaxElement e) { return e.data.toString(); }
+      public String str(Object e) { return "(" + spaceJoin((List) e) + ")"; }
+    },
+    MAP {
+      public String str(Object e) { return "{" + spaceJoin((List) e) + "}"; }
     },
     FILE {
-      public String str(SyntaxElement e) {
-        StringBuffer result = new StringBuffer();
-        boolean first = true;
-        for (Object i: (List)e.data) {
-          if (first) first = false;
-          else result.append("\n");
-          result.append(i).append("\n");
-        }
-        return result.toString();
-      }
+      public String str(Object e) { return join("\n", (Collection)e); }
     };
-    public abstract String str(SyntaxElement e);
+    public abstract String str(Object e);
+    public boolean skippable() { return false; };
     public final Keyword id;
-    Macro() { id = Keyword.intern("cst", name().toLowerCase()); }
+    Type() { id = Keyword.intern("cst", name().toLowerCase()); }
   };
 
-  public final Macro type;
+  public final Type type;
   public final Object data;
 
-  public SyntaxElement(Macro type) {
+  public SyntaxElement(Type type) {
     this.type = type;
     this.data = null;
   }
 
-  public SyntaxElement(Macro type, Object data) {
+  public SyntaxElement(Type type, Object data) {
     this.type = type;
     this.data = data;
   }
 
+  public Keyword id() { return type.id; }
+
+  public boolean skippable() {
+    return type.skippable();
+  }
+
+  public String emit() {
+    return type.str(data);
+  }
+
+  public static String emit(Object o) {
+    if (o instanceof IPersistentVector) return Type.VECTOR.str(o);
+    if (o instanceof IPersistentList) return Type.LIST.str(o);
+    if (o instanceof IPersistentSet) return Type.SET.str(o);
+    if (o instanceof SyntaxElement) return ((SyntaxElement)o).emit();
+    StringWriter w = new StringWriter();
+    try {
+      clojure.lang.RT.print(o, w);
+    } catch (IOException e) {
+      throw new ExceptionInfo("Error in string output", RT.map(), e);
+    }
+    return w.toString();
+  }
+
   public String toString() {
-    return type.str(this);
+    return "<" + type.name() + ": " + data + ">";
   }
 }

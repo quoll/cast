@@ -11,7 +11,6 @@
 package cst;
 
 import clojure.lang.*;
-import clojure.lang.Compiler;
 
 import java.io.IOException;
 import java.io.PushbackReader;
@@ -22,10 +21,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static cst.SyntaxElement.Macro;
+import static cst.SyntaxElement.Type;
 
 public class LispReader {
 
@@ -88,8 +86,8 @@ public class LispReader {
   macros['"'] = new StringReader();
   macros[';'] = new SyntaxCommentReader();
   macros[','] = new CommaReader();
-  macros['\''] = new WrappingReader(Macro.QUOTE);
-  macros['@'] = new WrappingReader(Macro.DEREF);//new DerefReader();
+  macros['\''] = new WrappingReader(SyntaxElement.Type.QUOTE);
+  macros['@'] = new WrappingReader(SyntaxElement.Type.DEREF);//new DerefReader();
   macros['^'] = new MetaReader();
   macros['`'] = new SyntaxQuoteReader();
   macros['~'] = new UnquoteReader();
@@ -114,8 +112,6 @@ public class LispReader {
   dispatchMacros['_'] = new DiscardReader();
   dispatchMacros['?'] = new ConditionalReader();
   }
-
-  static final SyntaxElement COMMA_SYNTAX = new SyntaxElement(Macro.COMMA);
 
   static Namespace currentNS() { return (Namespace)RT.CURRENT_NS.deref(); }
 
@@ -490,7 +486,7 @@ public class LispReader {
 
   public static class CommaReader extends AFn {
     public Object invoke(Object reader, Object doublequote, Object opts, Object pendingForms) {
-      return COMMA_SYNTAX;
+      return SyntaxElement.COMMA_SYNTAX;
     }
   }
 
@@ -561,15 +557,15 @@ public class LispReader {
     }
   }
 
-  public static class SyntaxCommentReader extends AFn {
+  public static class SyntaxCommentReader extends CommentReader {
     public Object invoke(Object reader, Object semicolon, Object opts, Object pendingForms) {
-      return new SyntaxElement(Macro.COMMENT, super.invoke(reader, semicolon, opts, pendingForms));
+      return new SyntaxElement(SyntaxElement.Type.COMMENT, super.invoke(reader, semicolon, opts, pendingForms));
     }
   }
 
-  public static class MacroCommentReader extends AFn {
+  public static class MacroCommentReader extends CommentReader {
     public Object invoke(Object reader, Object semicolon, Object opts, Object pendingForms) {
-      return new SyntaxElement(Macro.M_COMMENT, super.invoke(reader, semicolon, opts, pendingForms));
+      return new SyntaxElement(Type.M_COMMENT, super.invoke(reader, semicolon, opts, pendingForms));
     }
   }
 
@@ -577,14 +573,14 @@ public class LispReader {
     public Object invoke(Object reader, Object underscore, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
       Object form = read(r, true, null, true, opts, ensurePending(pendingForms));
-      return new SyntaxElement(Macro.DISCARD, form);
+      return new SyntaxElement(SyntaxElement.Type.DISCARD, form);
     }
   }
 
   public static class WrappingReader extends AFn {
-    final SyntaxElement.Macro t;
+    final SyntaxElement.Type t;
 
-    public WrappingReader(SyntaxElement.Macro t) { this.t = t; }
+    public WrappingReader(SyntaxElement.Type t) { this.t = t; }
 
     public Object invoke(Object reader, Object quote, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
@@ -617,7 +613,7 @@ public class LispReader {
     public Object invoke(Object reader, Object quote, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
       Object o = read(r, true, null, true, opts, ensurePending(pendingForms));
-      return new SyntaxElement(Macro.VAR, RT.list(THE_VAR, o));
+      return new SyntaxElement(SyntaxElement.Type.VAR, RT.list(THE_VAR, o));
     }
   }
 
@@ -657,7 +653,7 @@ public class LispReader {
         Var.pushThreadBindings(RT.map(ARG_ENV, PersistentTreeMap.EMPTY));
         unread(r, '(');
         Object form = read(r, true, null, true, opts, ensurePending(pendingForms));
-        return new SyntaxElement(Macro.FN, form);
+        return new SyntaxElement(SyntaxElement.Type.FN, form);
       } finally {
         Var.popThreadBindings();
       }
@@ -680,7 +676,7 @@ public class LispReader {
   static class ArgReader extends AFn {
     public Object invoke(Object reader, Object pct, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
-      return new SyntaxElement(Macro.ARG, interpretToken(readToken(r, '%')));
+      return new SyntaxElement(SyntaxElement.Type.ARG, interpretToken(readToken(r, '%')));
     }
   }
 
@@ -710,7 +706,7 @@ public class LispReader {
         if (line != -1 && o instanceof ISeq) {
           meta = ((IPersistentMap) meta).assoc(LINE_KEY, line).assoc(COLUMN_KEY, column);
         }
-        return new SyntaxElement(Macro.META, RT.map(META_KEY, meta, OBJECT_KEY, o));
+        return new SyntaxElement(SyntaxElement.Type.META, RT.map(META_KEY, meta, OBJECT_KEY, o));
       } else {
         throw new IllegalArgumentException("Metadata can only be applied to IMetas");
       }
@@ -741,7 +737,7 @@ public class LispReader {
               || form instanceof String) {
         ret = form;
       } else {
-        ret = new SyntaxElement(Macro.SYNTAX_QUOTE, form);
+        ret = new SyntaxElement(SyntaxElement.Type.SYNTAX_QUOTE, form);
       }
 
       if (form instanceof IObj && RT.meta(form) != null) {
@@ -785,17 +781,17 @@ public class LispReader {
       pendingForms = ensurePending(pendingForms);
       if (ch == '@') {
         Object o = read(r, true, null, true, opts, pendingForms);
-        return new SyntaxElement(Macro.UNQUOTE_SPLICING, o);
+        return new SyntaxElement(SyntaxElement.Type.UNQUOTE_SPLICING, o);
       } else {
         unread(r, ch);
         Object o = read(r, true, null, true, opts, pendingForms);
-        return new SyntaxElement(Macro.UNQUOTE, o);
+        return new SyntaxElement(Type.UNQUOTE, o);
       }
     }
   }
 
   public static class CharacterReader extends AFn {
-    private SyntaxElement cse(char c) { return new SyntaxElement(Macro.CHAR, c); }
+    private SyntaxElement cse(char c) { return new SyntaxElement(SyntaxElement.Type.CHAR, c); }
 
     public Object invoke(Object reader, Object backslash, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader) reader;
@@ -862,7 +858,7 @@ public class LispReader {
 
       PushbackReader r = (PushbackReader) reader;
       Object o = read(r, true, null, true, opts, ensurePending(pendingForms));
-      return new SyntaxElement(Macro.EVAL, o);
+      return new SyntaxElement(SyntaxElement.Type.EVAL, o);
     }
   }
 
@@ -876,18 +872,22 @@ public class LispReader {
   public static class MapReader extends AFn {
     public Object invoke(Object reader, Object leftparen, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader)reader;
-      Object[] a = readDelimitedList('}', r, true, opts, ensurePending(pendingForms)).toArray();
-      if ((a.length & 1) == 1) {
+      List a = readDelimitedList('}', r, true, opts, ensurePending(pendingForms));
+      int skipped = 0;
+      for (Object e: a) {
+        if (e instanceof SyntaxElement && ((SyntaxElement)e).skippable()) skipped++;
+      }
+      if (((a.size() - skipped) & 1) == 1) {
         throw Util.runtimeException("Map literal must contain an even number of forms");
       }
-      return clojure.lang.PersistentArrayMap.createAsIfByAssoc(a);
+      return new SyntaxElement(SyntaxElement.Type.MAP, a);
     }
   }
 
   public static class SetReader extends AFn {
     public Object invoke(Object reader, Object leftbracket, Object opts, Object pendingForms) {
       PushbackReader r = (PushbackReader)reader;
-      return new SyntaxElement(Macro.SET, readDelimitedList('}', r, true, opts, ensurePending(pendingForms)));
+      return new SyntaxElement(SyntaxElement.Type.SET, readDelimitedList('}', r, true, opts, ensurePending(pendingForms)));
     }
   }
 
@@ -1091,7 +1091,7 @@ public class LispReader {
         } else {
           result = s;
         }
-        return new SyntaxElement(Macro.CONDITIONAL,
+        return new SyntaxElement(SyntaxElement.Type.CONDITIONAL,
                                  RT.map(SyntaxElement.SPLICE_KEY, splicing,
                                         SyntaxElement.FORM_KEY, result));
       } finally {

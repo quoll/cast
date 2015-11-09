@@ -1,22 +1,27 @@
 (ns cst.data
   (:require [clojure.string :as str])
   (:import [datomic Peer]
-           [cst SyntaxElement$Macro]))
+           [cst SyntaxElement$Type]))
 
 (def std-types [:keyword :string :boolean :long :bigint :float :double :bigdec :instant :uuid :uri])
 
-(def types (cons {:db/id (Peer/tempid :db.part/db)
-                  :db/ident :cst.value/object
-                  :db/valueType :db.type/ref
-                  :db/cardinality :db.cardinality/one
-                  :db.install/_attribute :db.part/db}
-             (map #(let [nm (name %)]
-                        {:db/id                 (Peer/tempid :db.part/db)
-                         :db/ident              (keyword "cst.value" nm)
-                         :db/valueType          (keyword "db.type" nm)
-                         :db/cardinality        :db.cardinality/one
-                         :db.install/_attribute :db.part/db})
-                      std-types)))
+(def types (concat [{:db/id                 (Peer/tempid :db.part/db)
+                     :db/ident              :cst.value/object
+                     :db/valueType          :db.type/ref
+                     :db/cardinality        :db.cardinality/one
+                     :db.install/_attribute :db.part/db}
+                    {:db/id                 (Peer/tempid :db.part/db)
+                     :db/ident              :cst.value/symbol
+                     :db/valueType          :db.type/string
+                     :db/cardinality        :db.cardinality/one
+                     :db.install/_attribute :db.part/db}]
+                   (map #(let [nm (name %)]
+                          {:db/id                 (Peer/tempid :db.part/db)
+                           :db/ident              (keyword "cst.value" nm)
+                           :db/valueType          (keyword "db.type" nm)
+                           :db/cardinality        :db.cardinality/one
+                           :db.install/_attribute :db.part/db})
+                        std-types)))
 
 (def basic-schema
   [{:db/id (Peer/tempid :db.part/db)
@@ -33,6 +38,12 @@
     :db/ident :cst/index
     :db/valueType :db.type/long
     :db/cardinality :db.cardinality/one
+    :db.install/_attribute :db.part/db}
+   {:db/id (Peer/tempid :db.part/db)
+    :db/ident :cst/location
+    :db/valueType :db.type/uri
+    :db/cardinality :db.cardinality/one
+    :db/unique :db.unique/identity
     :db.install/_attribute :db.part/db}])
 
 (def partitions
@@ -47,7 +58,7 @@
     (map (fn [e]
            {:db/id    (Peer/tempid :db.part/cst)
             :db/ident (keyword (str/lower-case (.name e)))})
-         (SyntaxElement$Macro/values))
+         (SyntaxElement$Type/values))
     {:db/id (Peer/tempid :db.part/cst)
      :db/ident :native}))
 
