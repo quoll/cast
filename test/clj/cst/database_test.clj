@@ -83,6 +83,6 @@
         db (d/db cnx)
         pid (q '[:find ?pid . :where [?pid :cst/type :file]] db)
         prog (d/touch (d/entity db pid))
-        p (d/pull db '[:cst/element] pid)]
-    ; (pprint p)
+        p (d/pull db '[*] pid)]
+     (pprint p)
     ))
