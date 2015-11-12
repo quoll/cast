@@ -1,10 +1,12 @@
 (ns cst.database-test
   (:use [clojure.test]
         [clojure.pprint]
+        [util.macro]
         [cst.database]
         [cst.reader]
         [datomic.api :refer [q] :as d])
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [cst.path :as path])
   (:import [datomic.db DbId]
            [datomic.query EntityMap]
            (java.util Map)))
@@ -86,3 +88,44 @@
         p (d/pull db '[*] pid)]
      (pprint p)
     ))
+
+(defmacro with-connection [bindings & body]
+  (assert-args
+    (vector? bindings) "a vector for its binding"
+    (even? (count bindings)) "an even number of forms in binding vector")
+  (cond
+    (= (count bindings) 0) `(do ~@body)
+    (symbol? (bindings 0))
+    (let [s# (bindings 0)
+          uri# (bindings 1)]
+      `(if (d/create-database ~uri#)
+         (let [~s# (d/connect ~uri#)]
+           (try
+             (load-schema ~s#)
+             (with-connection ~(subvec bindings 2) ~@body)
+             (finally (d/release ~s#)
+                      (d/delete-database ~uri#))))
+         (throw (ex-info (str "Unable to create database: " ~uri#) {:uri ~uri#}))))
+    :else (throw (IllegalArgumentException. "with-db only allows Symbols to be bound"))))
+
+(def hello-program "(ns cst.test-hello)\n(println \"Hello world\")")
+
+(deftest rt-hello
+  (with-connection [c "datomic:mem://source"]
+    (let [chello (cst-read-all-string hello-program "foo")
+          tx (tx-data chello)
+          _ (d/transact c tx)
+          location (:cst/location (last tx))
+          db (d/db c)
+          reloaded (get-cst db "foo")]
+      (is (= location (path/to-uri "foo")))
+      (is (= hello-program (.emit reloaded))))
+
+    (let [chello (cst-read-all-string hello-program)
+          tx (tx-data chello)
+          _ (d/transact c tx)
+          location (:cst/location (last tx))
+          db (d/db c)
+          reloaded (get-cst db location)]
+      (is (= hello-program (.emit reloaded))))))
+

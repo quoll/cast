@@ -8,7 +8,7 @@
            [java.util Date UUID Map]
            [java.net URI]
            [java.math BigInteger BigDecimal]
-           [cst SyntaxElement]))
+           [cst SyntaxElement SyntaxElement$Type]))
 
 (def dburl "datomic:dev://localhost:4334/source")
 
@@ -108,7 +108,9 @@
           s {:db/id    node-id
              :cst/type etype}]
       (cond
-        (= :cst/file etype) (list-data (:data data) :file (:location data))     ;; list structure for the file contents
+        (= :cst/file etype) (let [location (or (path/to-uri (:location data))
+                                               (URI. (str "uuid:" (UUID/randomUUID))))]
+                              (list-data (:data data) :file location)) ;; list structure for the file contents
         (= :cst/conditional etype) (let [[o auxo] (object-data (:form data))
                                          splice? (:splice data)
                                          cn (node)
@@ -127,27 +129,25 @@
 
 (defn tx-data
   "Convert an object into transaction data. The final item is always the Object."
-  ([obj]
-   (let [location (URI. (str "uuid:" (UUID/randomUUID)))]
-     (tx-data obj location)))
-  ([obj location]
-   (let [[element aux] (object-data obj)]
-     (if (instance? DbId element)
-       aux
-       (concat aux
-               [(if (map? element)
-                  element
-                  {:db/id                  (node)
-                   :cst/type               :native
-                   (data-property element) (smb element)})])))))
+  [obj]
+  (let [[element aux] (object-data obj)]
+    (if (instance? DbId element)
+      aux
+      (concat aux
+              [(if (map? element)
+                 element
+                 {:db/id                  (node)
+                  :cst/type               :native
+                  (data-property element) (smb element)})]))))
 
 (declare reconstruct)
 
-(defmulti value-of (fn [p v] p) "Creates a value from v based on the type associated with the property p")
+; "Creates a value from v based on the type associated with the property p"
+(defmulti value-of (fn [p v] p))
 
 (defmethod value-of :cst.value/symbol
   [p ^String v]
-  (Symbol v))
+  (symbol v))
 
 (defmethod value-of :cst.value/object
   [p m]
@@ -175,23 +175,23 @@
 
 (defmethod reconstruct :vector
   [v]
-  (let [elements (rebuild-list (:cst/element f))]
+  (let [elements (rebuild-list (:cst/element v))]
     (SyntaxElement. SyntaxElement$Type/VECTOR (apply vector (map reconstruct elements)))))
 
 (defmethod reconstruct :list
-  [v]
-  (let [elements (rebuild-list (:cst/element f))]
+  [l]
+  (let [elements (rebuild-list (:cst/element l))]
     (SyntaxElement. SyntaxElement$Type/LIST (map reconstruct elements))))
 
 (defmethod reconstruct :map
-  [v]
-  (let [elements (rebuild-list (:cst/element f))]
+  [m]
+  (let [elements (rebuild-list (:cst/element m))]
     (SyntaxElement. SyntaxElement$Type/MAP (map reconstruct elements))))
 
 (defmethod reconstruct :conditional
-  [v]
-  (let [form (reconstruct (:cst.cond/form v))
-        splice? (:cst.cond/splice v)]
+  [c]
+  (let [form (reconstruct (:cst.cond/form c))
+        splice? (:cst.cond/splice c)]
     (SyntaxElement. SyntaxElement$Type/CONDITIONAL {:splice splice?, :form form})))
 
 (defmethod reconstruct :default [v] v)
