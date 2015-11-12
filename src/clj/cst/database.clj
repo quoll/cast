@@ -1,5 +1,6 @@
 (ns cst.database
   (:require [cst.schema :as data]
+            [cst.path :as path]
             [datomic.api :refer [q] :as d])
   (:import [datomic Peer]
            [datomic.db DbId]
@@ -106,12 +107,19 @@
           data (. x data)
           s {:db/id    node-id
              :cst/type etype}]
-      (if (= :cst/file etype)                               ;; file elements are treated differently
-        (list-data (:data data) :file (:location data))     ;; list structure for the file contents
-        (if data
-          (let [[d auxd] (object-data data)]
-            [node-id (concat auxd [(assoc s (data-property d) (smb d))])])
-          [node-id []]))))
+      (cond
+        (= :cst/file etype) (list-data (:data data) :file (:location data))     ;; list structure for the file contents
+        (= :cst/conditional etype) (let [[o auxo] (object-data (:form data))
+                                         splice? (:splice data)
+                                         cn (node)
+                                         condo {:db/id cn
+                                                :cst/type etype
+                                                :cst.cond/splice splice?
+                                                :cst.cond/form o}]
+                                      [cn (concat auxo [condo])])
+        data (let [[d auxd] (object-data data)]
+               [node-id (concat auxd [(assoc s (data-property d) (smb d))])])
+        :default [node-id []])))
   IPersistentList
   (object-data [^IPersistentList x] (list-data x :list))
   IPersistentVector
@@ -132,4 +140,73 @@
                   {:db/id                  (node)
                    :cst/type               :native
                    (data-property element) (smb element)})])))))
+
+(declare reconstruct)
+
+(defmulti value-of (fn [p v] p) "Creates a value from v based on the type associated with the property p")
+
+(defmethod value-of :cst.value/symbol
+  [p ^String v]
+  (Symbol v))
+
+(defmethod value-of :cst.value/object
+  [p m]
+  (reconstruct m))
+
+(defmethod value-of :default [p m] m)
+
+(defn value-fn
+  "Retrieves the value from a structure, "
+  [e]
+  (some (fn [[k v]] (if (= (namespace k) "cst.value")
+                      (value-of k v)))
+        e))
+
+(defn rebuild-list
+  [l]
+  (map value-fn (sort-by :cst/index l)))
+
+(defmulti reconstruct :cst/type)
+
+(defmethod reconstruct :file
+  [f]
+  (let [elements (rebuild-list (:cst/element f))]
+    (SyntaxElement. SyntaxElement$Type/FILE (map reconstruct elements))))
+
+(defmethod reconstruct :vector
+  [v]
+  (let [elements (rebuild-list (:cst/element f))]
+    (SyntaxElement. SyntaxElement$Type/VECTOR (apply vector (map reconstruct elements)))))
+
+(defmethod reconstruct :list
+  [v]
+  (let [elements (rebuild-list (:cst/element f))]
+    (SyntaxElement. SyntaxElement$Type/LIST (map reconstruct elements))))
+
+(defmethod reconstruct :map
+  [v]
+  (let [elements (rebuild-list (:cst/element f))]
+    (SyntaxElement. SyntaxElement$Type/MAP (map reconstruct elements))))
+
+(defmethod reconstruct :conditional
+  [v]
+  (let [form (reconstruct (:cst.cond/form v))
+        splice? (:cst.cond/splice v)]
+    (SyntaxElement. SyntaxElement$Type/CONDITIONAL {:splice splice?, :form form})))
+
+(defmethod reconstruct :default [v] v)
+
+(defn get-filenames
+  "Retrieves the locations (or paths) for each file stored in the database."
+  [db]
+  (q '[:find [?l ...] :where [?e :cst/type :file] [?e :cst/location ?l]] db))
+
+(defn get-cst
+  "Retrieves the Concrete Syntax Tree for a file location. Returns nil if the location is unknown."
+  [db location]
+  (when-let [eid (q '[:find ?e . :in $ ?l :where [?e :cst/location ?l] [?e :cst/type :file]]
+                    db
+                    (path/to-uri location))]
+    (let [fdata (d/pull db '[*] eid)]
+      (reconstruct fdata))))
 

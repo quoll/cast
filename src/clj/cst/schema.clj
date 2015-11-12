@@ -51,7 +51,18 @@
     :db/valueType :db.type/uri
     :db/cardinality :db.cardinality/one
     :db/unique :db.unique/identity
-    :db.install/_attribute :db.part/db}])
+    :db.install/_attribute :db.part/db}
+   {:db/id (Peer/tempid :db.part/db)
+    :db/ident :cst.cond/form
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db.install/_attribute :db.part/db}
+   {:db/id (Peer/tempid :db.part/db)
+    :db/ident :cst.cond/splice
+    :db/valueType :db.type/boolean
+    :db/cardinality :db.cardinality/one
+    :db.install/_attribute :db.part/db}
+   ])
 
 (def partitions
   [{:db/id (Peer/tempid :db.part/db)
