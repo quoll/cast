@@ -11,4 +11,6 @@ https://www.facebook.com/notes/kent-beck/prune-a-code-editor-that-is-not-a-text-
 
 This is my first attempt at using Cursive, so some files for supporting IntelliJ IDEA are also included. These may be ignored.
 
+The Parser is a simple adaptation of the parsing portion of clojure.lang.LispReader, which means that it this part is written in Java. To make for easier integration (due to compilation order) and to allow for protocol dispatch on type, the syntax structure are also written in Java. The rest is in Clojure.
+
 The code still has a long way to go, but it's doing basic things now.
