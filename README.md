@@ -9,4 +9,6 @@ The idea of storing the CST is to enable an editor to modify source code in a da
 
 https://www.facebook.com/notes/kent-beck/prune-a-code-editor-that-is-not-a-text-editor/1012061842160013
 
+This is my first attempt at using Cursive, so some files for supporting IntelliJ IDEA are also included. These may be ignored.
+
 The code still has a long way to go, but it's doing basic things now.
