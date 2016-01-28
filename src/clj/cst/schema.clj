@@ -62,7 +62,12 @@
     :db/valueType :db.type/boolean
     :db/cardinality :db.cardinality/one
     :db.install/_attribute :db.part/db}
-   ])
+   {:db/id (Peer/tempid :db.part/db)
+    :db/ident :cst/rest
+    :db/valueType :db.type/ref
+    :db/isComponent true
+    :db/cardinality :db.cardinality/one
+    :db.install/_attribute :db.part/db}])
 
 (def partitions
   [{:db/id (Peer/tempid :db.part/db)

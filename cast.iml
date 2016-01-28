@@ -16,61 +16,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Clojure-1.7.0" level="project" />
     <orderEntry type="library" name="Leiningen: clojure-complete:0.2.3" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-autoscaling:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudformation:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudfront:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudhsm:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudsearch:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudtrail:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudwatch:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cloudwatchmetrics:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-codedeploy:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cognitoidentity:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-cognitosync:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-config:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-core:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-datapipeline:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-directconnect:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-directory:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-dynamodb:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-ec2:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-ecs:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-efs:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-elasticache:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-elasticbeanstalk:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-elasticloadbalancing:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-elastictranscoder:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-emr:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-glacier:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-iam:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-importexport:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-kinesis:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-kms:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-lambda:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-logs:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-machinelearning:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-opsworks:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-rds:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-redshift:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-route53:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-s3:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-ses:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-simpledb:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-simpleworkflow:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-sns:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-sqs:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-ssm:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-storagegateway:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-sts:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-support:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-swf-libraries:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-workspaces:1.9.39" level="project" />
-    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk:1.9.39" level="project" />
     <orderEntry type="library" name="Leiningen: com.datomic/datomic-lucene-core:3.3.0" level="project" />
-    <orderEntry type="library" name="Leiningen: com.datomic/datomic-pro:0.9.5327" level="project" />
-    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-annotations:2.3.0" level="project" />
-    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.3.2" level="project" />
-    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-databind:2.3.2" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/datomic-pro:0.9.5344" level="project" />
     <orderEntry type="library" name="Leiningen: com.google.guava/guava:18.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.h2database/h2:1.3.171" level="project" />
     <orderEntry type="library" name="Leiningen: commons-codec:1.5" level="project" />

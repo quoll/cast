@@ -28,53 +28,46 @@
 (deftest simple-list
   (let [[id-node the-data] (list-data [1 2] :vector)
         elts (map blankify-nodes the-data)
-        node (last the-data)
-        bnode (last elts)]
+        node (first the-data)
+        bnode (first elts)]
     (is (= id-node (:db/id node)))
     (is (= {:db/id :blank
             :cst/type :vector
-            :cst/element [:blank :blank]}
+            :cst.value/long 1
+            :cst/rest :blank}
            bnode))
     (is (every? #(= :blank (:db/id %)) elts))
-    (is (every? #(= (dec (:cst.value/long %)) (:cst/index %)) (take 2 elts)))
-    (is (= (count elts) 3))))
+    (is (= #{1 2} (set (map :cst.value/long the-data))))
+    (is (= (count elts) 2))))
 
 (deftest natives
   (let [tx (tx-data (cst-read-all-string "5"))
         btx (map blankify-nodes tx)]
-    (is (= [{:db/id          :blank
-             :cst/index      0
-             :cst.value/long 5}
-            {:db/id       :blank
+    (is (= [{:db/id       :blank
              :cst/type    :file
-             :cst/element [:blank]}] btx)))
+             :cst.value/long 5}] btx)))
   (let [tx (tx-data (cst-read-all-string "5\n:foo"))
         btx (map blankify-nodes tx)]
-    (is (= [{:db/id          :blank
-             :cst/index      0
-             :cst.value/long 5}
-            {:db/id          :blank
-             :cst/index      1
-             :cst.value/keyword :foo}
-            {:db/id       :blank
+    (is (= [{:db/id       :blank
              :cst/type    :file
-             :cst/element [:blank :blank]}] btx))))
+             :cst.value/long 5
+             :cst/rest    :blank}
+            {:db/id          :blank
+             :cst.value/keyword :foo}] btx))))
 
 (deftest short-ns
   (let [fhello "(ns cst.test-hello)\n(println \"Hello world\")"
         chello (cst-read-all-string fhello)
         tx (tx-data chello)
-        btx (map blankify-nodes tx)]
-    (is (= [{:db/id :blank :cst/index 0 :cst.value/symbol "ns"}
-            {:db/id :blank :cst/index 1 :cst.value/symbol "cst.test-hello"}
-            {:db/id :blank :cst/type :list :cst/element [:blank :blank]}
-            {:db/id :blank :cst/index 0 :cst.value/symbol "println"}
-            {:db/id :blank :cst/index 1 :cst.value/string "Hello world"}
-            {:db/id :blank :cst/type :list :cst/element [:blank :blank]}
-            {:db/id :blank :cst/index 0 :cst.value/object :blank}
-            {:db/id :blank :cst/index 1 :cst.value/object :blank}
-            {:db/id :blank :cst/type :file :cst/element [:blank :blank]}]
-           btx))))
+        btx (->> tx (map blankify-nodes) (map #(dissoc % :cst/location)))]
+    (is (= #{{:db/id :blank, :cst/type :file, :cst.value/object :blank, :cst/rest :blank}
+             {:db/id :blank, :cst/type :list, :cst.value/symbol "ns", :cst/rest :blank}
+             {:db/id :blank, :cst.value/symbol "cst.test-hello"}
+             {:db/id :blank, :cst/type :list, :cst.value/symbol "println", :cst/rest :blank}
+             {:db/id :blank, :cst.value/string "Hello world"}
+             {:db/id :blank, :cst.value/object :blank}}
+           (set btx)))
+    (println "TX: " tx)))
 
 (deftest save-program
   (let [fhello "(ns cst.test-hello)\n(println \"Hello world\")"

@@ -4,7 +4,7 @@
             [datomic.api :refer [q] :as d])
   (:import [datomic Peer]
            [datomic.db DbId]
-           [clojure.lang Keyword Symbol IPersistentList IPersistentVector]
+           [clojure.lang Keyword Symbol IPersistentList IPersistentVector IPersistentMap]
            [java.util Date UUID Map]
            [java.net URI]
            [java.math BigInteger BigDecimal]
@@ -73,59 +73,66 @@
   (object-data [x] "Returns a single value suitable for a transaction,
    paired with a seq of any supporting transaction data"))
 
-(defn list-struct
-  "Converts a seq into a transaction seq, of a provided type and using a given function for seq elements.
-  The provided function returns a pair: [list-element, auxiliary-data]
-  Returns a pair: [list-ID, tx-sequence]."
-  [s t l efn]
-  (let [elt-data (map-indexed efn s)
-        aux (apply concat (map second elt-data))
-        elements (map first elt-data)
-        list-id (node)
-        list-element {:db/id list-id, :cst/type t, :cst/element (map :db/id elements)}
-        list-element (if l (assoc list-element :cst/location l) list-element)]
-    [list-id (concat aux elements [list-element])]))
-
-(defn list-data
-  "Takes a sequence and its type id, and returns a seq of transaction elements."
-  ([s type] (list-data s type nil))
-  ([s type loc]
-   (list-struct s type loc (fn [n o]
-                             (let [[d aux] (object-data o)]
-                               [{:db/id            (node)
-                                 :cst/index        n
-                                 (data-property d) (smb d)}
-                                aux])))))
+(declare list-data)
 
 (extend-protocol Data
   Object
   (object-data [x] [x []])
   SyntaxElement
   (object-data [^SyntaxElement x]
-    (let [node-id (node)
-          etype (. x id)
+    (let [etype (. x id)
           data (. x data)
-          s {:db/id    node-id
-             :cst/type etype}]
+          node-id (node)]
       (cond
         (= :cst/file etype) (let [location (or (path/to-uri (:location data))
                                                (URI. (str "uuid:" (UUID/randomUUID))))]
-                              (list-data (:data data) :file location)) ;; list structure for the file contents
+                              (list-data (:data data) :file node-id location)) ;; list structure for the file contents
         (= :cst/conditional etype) (let [[o auxo] (object-data (:form data))
                                          splice? (:splice data)
-                                         cn (node)
-                                         condo {:db/id cn
+                                         condo {:db/id node-id
                                                 :cst/type etype
                                                 :cst.cond/splice splice?
                                                 :cst.cond/form o}]
-                                      [cn (concat auxo [condo])])
+                                     [node-id (concat auxo [condo])])
         data (let [[d auxd] (object-data data)]
-               [node-id (concat auxd [(assoc s (data-property d) (smb d))])])
+               [node-id (concat auxd [(assoc {:db/id node-id, :cst/type etype}
+                                        (data-property d) (smb d))])])
         :default [node-id []])))
   IPersistentList
-  (object-data [^IPersistentList x] (list-data x :list))
+  (object-data [^IPersistentList x] (list-data x :list (node)))
   IPersistentVector
-  (object-data [^IPersistentVector x] (list-data x :vector)))
+  (object-data [^IPersistentVector x] (list-data x :vector (node)))
+  IPersistentMap
+  (object-data [^IPersistentMap x] (list-data (seq x) :map (node))))
+
+
+(defn- list-struct
+  [[head & tail] pre-node]
+  (let [pre-node (or pre-node (node))
+        [d aux] (object-data head)
+        list-elt {:db/id pre-node, (data-property d) (smb d)}]
+    ;; if d is an object, then drop it in as a replacement at the end, or add rest to it
+    (if-not (seq tail)
+      [[list-elt aux]]
+      (let [next-node (node)]
+        (lazy-seq (cons [(assoc list-elt :cst/rest next-node) aux]
+                        (list-struct tail next-node)))))))
+
+(defn list-data
+  "Converts a seq into a transaction seq, of a provided type and using a given function for seq elements.
+  s - sequence
+  t - type
+  l - location
+  The provided function returns a pair: [list-element, auxiliary-data]
+  Returns a pair: [list-ID, tx-sequence]."
+  ([s t n] (list-data s t n nil))
+  ([s t n l]
+   (let [elt-data (list-struct s n)
+         aux (apply concat (map second elt-data))
+         [{list-id :db/id :as head} & srest] (map first elt-data)
+         head (assoc head :cst/type t)
+         head (if l (assoc head :cst/location l) head)]
+     [list-id (concat aux (cons head srest))])))
 
 (defn tx-data
   "Convert an object into transaction data. The final item is always the Object."
