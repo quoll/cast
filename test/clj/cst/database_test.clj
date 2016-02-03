@@ -26,7 +26,7 @@
                    m))))
 
 (deftest simple-list
-  (let [[id-node the-data] (list-data [1 2] :vector)
+  (let [[id-node the-data] (list-data [1 2] :vector nil)
         elts (map blankify-nodes the-data)
         node (first the-data)
         bnode (first elts)]
@@ -108,7 +108,7 @@
     (let [chello (cst-read-all-string hello-program "foo")
           tx (tx-data chello)
           _ (d/transact c tx)
-          location (:cst/location (last tx))
+          location (first (keep :cst/location tx))
           db (d/db c)
           reloaded (get-cst db "foo")]
       (is (= location (path/to-uri "foo")))
@@ -117,7 +117,7 @@
     (let [chello (cst-read-all-string hello-program)
           tx (tx-data chello)
           _ (d/transact c tx)
-          location (:cst/location (last tx))
+          location (first (keep :cst/location tx))
           db (d/db c)
           reloaded (get-cst db location)]
       (is (= hello-program (.emit reloaded))))))

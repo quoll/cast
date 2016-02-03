@@ -14,6 +14,8 @@
   (to-uri [x] "Converts the value to a URI"))
 
 (extend-protocol URIable
+  nil
+  (to-uri [_] nil)
   String
   (to-uri [^String x]
     (if (has-schema x)

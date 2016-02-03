@@ -169,30 +169,37 @@
                       (value-of k v)))
         e))
 
-(defn rebuild-list
+(defn rebuild-list*
   [l]
   (map value-fn (sort-by :cst/index l)))
+
+(defn rebuild-list
+  [{next :cst/rest :as e}]
+  (let [v (value-fn e)]
+    (if-not (seq next)
+      [v]
+      (cons v (rebuild-list next)))))
 
 (defmulti reconstruct :cst/type)
 
 (defmethod reconstruct :file
   [f]
-  (let [elements (rebuild-list (:cst/element f))]
+  (let [elements (rebuild-list f)]
     (SyntaxElement. SyntaxElement$Type/FILE (map reconstruct elements))))
 
 (defmethod reconstruct :vector
   [v]
-  (let [elements (rebuild-list (:cst/element v))]
+  (let [elements (rebuild-list v)]
     (SyntaxElement. SyntaxElement$Type/VECTOR (apply vector (map reconstruct elements)))))
 
 (defmethod reconstruct :list
   [l]
-  (let [elements (rebuild-list (:cst/element l))]
+  (let [elements (rebuild-list l)]
     (SyntaxElement. SyntaxElement$Type/LIST (map reconstruct elements))))
 
 (defmethod reconstruct :map
   [m]
-  (let [elements (rebuild-list (:cst/element m))]
+  (let [elements (rebuild-list m)]
     (SyntaxElement. SyntaxElement$Type/MAP (map reconstruct elements))))
 
 (defmethod reconstruct :conditional
@@ -211,9 +218,10 @@
 (defn get-cst
   "Retrieves the Concrete Syntax Tree for a file location. Returns nil if the location is unknown."
   [db location]
-  (when-let [eid (q '[:find ?e . :in $ ?l :where [?e :cst/location ?l] [?e :cst/type :file]]
-                    db
-                    (path/to-uri location))]
-    (let [fdata (d/pull db '[*] eid)]
-      (reconstruct fdata))))
+  (when location
+    (when-let [eid (q '[:find ?e . :in $ ?l :where [?e :cst/location ?l] [?e :cst/type :file]]
+                      db
+                      (path/to-uri location))]
+      (let [fdata (d/pull db '[*] eid)]
+        (reconstruct fdata)))))
 
