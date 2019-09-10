@@ -12,6 +12,6 @@
     (println "TX:")
     (println tx-data)
     (println "----")
-    ;; (println (db/transact db tx-data))
+    (println (db/transact db tx-data))
     )
   )
